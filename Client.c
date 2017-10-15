@@ -34,7 +34,7 @@ struct sockaddr;
 
 /* Function Prototypes */
 void SetupSocket(int argc, char* argv[], int* portNumber, int* sockfd, struct hostent *he,\
- struct sockaddr_in *their_addr);
+	struct sockaddr_in *their_addr);
 
 bool Logon(int sockfd);
 void LogonScreen();
@@ -61,7 +61,7 @@ void PlayGame(int sockfd);
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SetupSocket ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 void SetupSocket(int argc, char* argv[], int* portNumber, int* sockfd, struct hostent *he,\
- struct sockaddr_in *their_addr){
+	struct sockaddr_in *their_addr){
 	if(argc < 3){
 		fprintf(stderr, "Error: Not Enough Inputs\n");
 		exit(1);
@@ -86,10 +86,10 @@ void SetupSocket(int argc, char* argv[], int* portNumber, int* sockfd, struct ho
 
 	/* Connect Socket */
 	if (connect(*sockfd, (struct sockaddr *)their_addr, \
-	sizeof(struct sockaddr)) == -1) {
+		sizeof(struct sockaddr)) == -1) {
 		perror("connect");
-		exit(1);
-	}
+	exit(1);
+}
 }
 
 
@@ -201,7 +201,7 @@ void MainMenuScreen(){
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ GetUserInput ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
- void GetUserInput(int* choice){
+void GetUserInput(int* choice){
 	char buff_buff[2]; int numVariables = 0; int c;
 
 	/* Flush stdin */
@@ -270,7 +270,7 @@ STILL TODO:
 */
 void ShowLeaderBoard(int sockfd){
 	uint16_t buffer = 0;
-	int result, numbytes;
+	int result, numbytes, number_of_players;
 
 	//printf("Im at the Leaderboard\n");
 
@@ -288,40 +288,44 @@ void ShowLeaderBoard(int sockfd){
 		printf("==============================================================================\n");
 	}else{
 
-		/* Lets synch up */
-		int toSend = 1;
-		uint16_t network_byte_order_short = htons(toSend);
-		if(send(sockfd, &network_byte_order_short, sizeof(uint16_t), 0) == -1){
-			perror("send: ");		
-		}
+		// /* Lets synch up */
+		// int toSend = 1;
+		// uint16_t network_byte_order_short = htons(toSend);
+		// if(send(sockfd, &network_byte_order_short, sizeof(uint16_t), 0) == -1){
+		// 	perror("send: ");		
+		// }
 
 
 		/* Recieve how many players  - will have for loop that repeats next steps*/
-		RecvNumberFrom_Server(sockfd, &result);
+		RecvNumberFrom_Server(sockfd, &number_of_players);
 		printf("\n==============================================================================\n\n");
 		//printf("There is info in the Leaderboard, coming shortly\n");
 
 		//printf("number of players = -%d-\n", result);
+		for(int ii = 0; ii < number_of_players; ii++){
+
 
 		/*Recieve thier name */
-		char buf[11];
+			char buf[11];
 
-		if ((numbytes=recv(sockfd, buf, 11*sizeof(char), 0)) == -1) {
-			perror("recv:");
-			exit(1);
-		}
+			if ((numbytes=recv(sockfd, buf, 11*sizeof(char), 0)) == -1) {
+				perror("recv:");
+				exit(1);
+			}
 
-		printf("\nPlayer  - %s\n", buf);
+			printf("\nPlayer  - %s\n", buf);
 
 		/* Recieve thier number of games won */
-		RecvNumberFrom_Server(sockfd, &result);
-		printf("Number of games won  - %d\n", result);
-		fflush(stdout);
+			RecvNumberFrom_Server(sockfd, &result);
+			printf("Number of games won  - %d\n", result);
+			fflush(stdout);
 
 		/*Recieve their number of games played */
-		RecvNumberFrom_Server(sockfd, &result);
-		printf("Number of games played  - %d\n\n", result);
-		printf("==============================================================================\n");
+			RecvNumberFrom_Server(sockfd, &result);
+			printf("Number of games played  - %d\n\n", result);
+			printf("==============================================================================\n");
+
+		}
 
 	}
 }
